@@ -47,8 +47,12 @@ public class SequencerContract : Contract
             BlockParameter start = new(startBlockNumber);
             LogFilter logFilter = new(0, start, end, _addressFilter, _topicsFilter);
 
+            IEnumerable<FilterLog> logs = _logFinder.FindLogs(logFilter);
+            
+            if (_logger.IsInfo) _logger.Info($"Got {logs.Count()} Shutter logs from blocks {start.BlockNumber!.Value} - {end.BlockNumber!.Value}");
+
             bool shouldBreak = false;
-            foreach (FilterLog log in _logFinder.FindLogs(logFilter))
+            foreach (FilterLog log in logs)
             {
                 ISequencerContract.TransactionSubmitted tx = ParseTransactionSubmitted(log);
 
@@ -76,7 +80,7 @@ public class SequencerContract : Contract
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ISequencerContract.TransactionSubmitted ParseTransactionSubmitted(FilterLog log)
     {
-        object[] decodedEvent = AbiEncoder.Decode(AbiEncodingStyle.None, _transactionSubmittedAbi.Signature, log.Data);
+        object[] decodedEvent = AbiEncoder.Decode(AbiEncodingStyle.Packed, _transactionSubmittedAbi.Signature, log.Data);
         return new ISequencerContract.TransactionSubmitted
         {
             Eon = (ulong)decodedEvent[0],
