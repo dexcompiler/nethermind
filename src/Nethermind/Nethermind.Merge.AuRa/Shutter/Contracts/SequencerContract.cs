@@ -63,9 +63,10 @@ public class SequencerContract : Contract
 
                 if (tx.Eon == eon && tx.TxIndex >= txPointer)
                 {
-                    count++;
                     yield return tx;
                 }
+
+                count++;
             }
 
             if (_logger.IsInfo) _logger.Info($"Got {count} Shutter logs from blocks {start.BlockNumber!.Value} - {end.BlockNumber!.Value}");
@@ -82,7 +83,7 @@ public class SequencerContract : Contract
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ISequencerContract.TransactionSubmitted ParseTransactionSubmitted(FilterLog log)
     {
-        object[] decodedEvent = AbiEncoder.Decode(AbiEncodingStyle.Packed, _transactionSubmittedAbi.Signature, log.Data);
+        object[] decodedEvent = AbiEncoder.Decode(AbiEncodingStyle.None, _transactionSubmittedAbi.Signature, log.Data);
         return new ISequencerContract.TransactionSubmitted
         {
             Eon = (ulong)decodedEvent[0],
