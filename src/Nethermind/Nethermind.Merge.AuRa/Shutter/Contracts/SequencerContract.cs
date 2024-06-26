@@ -48,10 +48,9 @@ public class SequencerContract : Contract
             LogFilter logFilter = new(0, start, end, _addressFilter, _topicsFilter);
 
             IEnumerable<FilterLog> logs = _logFinder.FindLogs(logFilter);
-            
-            if (_logger.IsInfo) _logger.Info($"Got {logs.Count()} Shutter logs from blocks {start.BlockNumber!.Value} - {end.BlockNumber!.Value}");
 
             bool shouldBreak = false;
+            int count = 0;
             foreach (FilterLog log in logs)
             {
                 ISequencerContract.TransactionSubmitted tx = ParseTransactionSubmitted(log);
@@ -64,9 +63,12 @@ public class SequencerContract : Contract
 
                 if (tx.Eon == eon && tx.TxIndex >= txPointer)
                 {
+                    count++;
                     yield return tx;
                 }
             }
+
+            if (_logger.IsInfo) _logger.Info($"Got {count} Shutter logs from blocks {start.BlockNumber!.Value} - {end.BlockNumber!.Value}");
 
             if (shouldBreak)
             {
