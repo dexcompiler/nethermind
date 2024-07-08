@@ -24,7 +24,7 @@ using LoadedTransactions = ShutterTxLoader.LoadedTransactions;
 
 public class ShutterTxSource(
     ILogFinder logFinder,
-    IFilterStore filterStore,
+#pragma warning disable CS9113 // Parameter is unread.
     ReadOnlyTxProcessingEnvFactory envFactory,
     IAbiEncoder abiEncoder,
     IShutterConfig shutterConfig,
@@ -32,15 +32,16 @@ public class ShutterTxSource(
     IEthereumEcdsa ethereumEcdsa,
     IReadOnlyBlockTree readOnlyBlockTree,
     Dictionary<ulong, byte[]> validatorsInfo,
+#pragma warning restore CS9113 // Parameter is unread.
     ILogManager logManager)
     : ITxSource
 {
     private LoadedTransactions? _loadedTransactions;
-    private bool _validatorsRegistered;
+    // private bool _validatorsRegistered;
     private readonly ILogger _logger = logManager.GetClassLogger();
     private readonly ShutterTxLoader _txLoader = new(logFinder, shutterConfig, specProvider, ethereumEcdsa, readOnlyBlockTree, logManager);
-    private readonly Address _validatorRegistryContractAddress = new(shutterConfig.ValidatorRegistryContractAddress!);
-    private readonly ulong _validatorRegistryMessageVersion = shutterConfig.ValidatorRegistryMessageVersion;
+    // private readonly Address _validatorRegistryContractAddress = new(shutterConfig.ValidatorRegistryContractAddress!);
+    // private readonly ulong _validatorRegistryMessageVersion = shutterConfig.ValidatorRegistryMessageVersion;
 
     public IEnumerable<Transaction> GetTransactions(BlockHeader parent, long gasLimit, PayloadAttributes? payloadAttributes = null)
     {
@@ -100,15 +101,15 @@ public class ShutterTxSource(
         return ((ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds() - genesisTimestamp) / 5 + 1;
     }
 
-    private bool IsRegistered(BlockHeader parent)
-    {
-        IReadOnlyTransactionProcessor readOnlyTransactionProcessor = envFactory.Create().Build(parent.StateRoot!);
-        ValidatorRegistryContract validatorRegistryContract = new(readOnlyTransactionProcessor, abiEncoder, _validatorRegistryContractAddress, _logger, specProvider.ChainId, _validatorRegistryMessageVersion);
-        if (!validatorRegistryContract.IsRegistered(parent, validatorsInfo, out HashSet<ulong> unregistered))
-        {
-            if (_logger.IsError) _logger.Error($"Validators not registered to Shutter with the following indices: [{string.Join(", ", unregistered)}]");
-            return false;
-        }
-        return true;
-    }
+    // private bool IsRegistered(BlockHeader parent)
+    // {
+    //     IReadOnlyTransactionProcessor readOnlyTransactionProcessor = envFactory.Create().Build(parent.StateRoot!);
+    //     ValidatorRegistryContract validatorRegistryContract = new(readOnlyTransactionProcessor, abiEncoder, _validatorRegistryContractAddress, _logger, specProvider.ChainId, _validatorRegistryMessageVersion);
+    //     if (!validatorRegistryContract.IsRegistered(parent, validatorsInfo, out HashSet<ulong> unregistered))
+    //     {
+    //         if (_logger.IsError) _logger.Error($"Validators not registered to Shutter with the following indices: [{string.Join(", ", unregistered)}]");
+    //         return false;
+    //     }
+    //     return true;
+    // }
 }
