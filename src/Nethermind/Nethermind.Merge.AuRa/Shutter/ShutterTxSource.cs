@@ -50,16 +50,18 @@ public class ShutterTxSource(
             return [];
         }
 
-        // assume validator will stay registered
-        if (!_validatorsRegistered)
-        {
-            if (!IsRegistered(parent))
-            {
-                return [];
-            }
+        // no validator registry check for experimental release
 
-            _validatorsRegistered = true;
-        }
+        // assume validator will stay registered
+        // if (!_validatorsRegistered)
+        // {
+        //     if (!IsRegistered(parent))
+        //     {
+        //         return [];
+        //     }
+
+        //     _validatorsRegistered = true;
+        // }
 
         ulong nextSlot = GetNextSlot();
 

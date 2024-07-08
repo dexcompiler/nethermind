@@ -70,7 +70,7 @@ public class ShutterEon(
         }
         catch (AbiException e)
         {
-            if (logger.IsError) logger.Error($"Error when calling Shutter Keyper contracts", e);
+            if (logger.IsWarn) logger.Warn($"Error when calling Shutter Keyper contracts {e}");
         }
         catch (Bls.Exception e)
         {
