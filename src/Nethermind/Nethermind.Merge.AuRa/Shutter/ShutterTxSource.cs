@@ -64,7 +64,7 @@ public class ShutterTxSource(
         //     _validatorsRegistered = true;
         // }
 
-        ulong nextSlot = GetNextSlot();
+        ulong slot = GetBuildingSlot();
 
         // atomic fetch
         LoadedTransactions? loadedTransactions = _loadedTransactions;
@@ -74,13 +74,13 @@ public class ShutterTxSource(
         }
         else
         {
-            if (_logger.IsInfo) _logger.Info($"Building Shutter block for slot {nextSlot} with {loadedTransactions.Value.Transactions.Length} transactions.");
-            if (loadedTransactions.Value.Slot == nextSlot)
+            if (_logger.IsInfo) _logger.Info($"Building Shutter block for slot {slot} with {loadedTransactions.Value.Transactions.Length} transactions.");
+            if (loadedTransactions.Value.Slot == slot)
             {
                 return loadedTransactions.Value.Transactions;
             }
 
-            if (_logger.IsWarn) _logger.Warn($"Decryption keys not received for slot {nextSlot}, cannot include Shutter transactions.");
+            if (_logger.IsWarn) _logger.Warn($"Decryption keys not received for slot {slot}, cannot include Shutter transactions.");
             if (_logger.IsDebug) _logger.Debug($"Current Shutter decryption keys stored for slot {loadedTransactions.Value.Slot}");
         }
 
@@ -94,11 +94,16 @@ public class ShutterTxSource(
 
     public ulong GetLoadedTransactionsSlot() => _loadedTransactions is null ? 0 : _loadedTransactions.Value.Slot;
 
-    private ulong GetNextSlot()
+    private ulong GetBuildingSlot()
     {
         // assume Gnosis or Chiado chain
         ulong genesisTimestamp = specProvider.ChainId == BlockchainIds.Chiado ? ChiadoSpecProvider.BeaconChainGenesisTimestamp : GnosisSpecProvider.BeaconChainGenesisTimestamp;
-        return ((ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds() - genesisTimestamp) / 5 + 1;
+        ulong timeSinceGenesis = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - (genesisTimestamp * 1000);
+        ulong currentSlot = timeSinceGenesis / 5000;
+        ushort slotOffset = (ushort)(timeSinceGenesis % 5000);
+
+        // if in first third then building for this slot, otherwise next
+        return (slotOffset < 1667) ? currentSlot : currentSlot + 1;
     }
 
     // private bool IsRegistered(BlockHeader parent)
