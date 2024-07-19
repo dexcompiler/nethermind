@@ -52,7 +52,7 @@ namespace Nethermind.Init.Steps
             {
                 foreach (IConsensusWrapperPlugin wrapperPlugin in _api.GetConsensusWrapperPlugins())
                 {
-                    return await wrapperPlugin.InitBlockProducer(consensusPlugin);
+                    return await wrapperPlugin.InitBlockProducer(consensusPlugin, null);
                 }
 
                 return await consensusPlugin.InitBlockProducer();

@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 using System;
-<<<<<<< HEAD
-using System.Threading.Tasks;
-using Nethermind.Api.Extensions;
-=======
 using System.Diagnostics;
->>>>>>> 30f4f62fb4 (merge shutter into release branch)
+using System.Threading.Tasks;
+using Microsoft.FSharp.Control;
+using Nethermind.Api.Extensions;
 using Nethermind.Consensus;
 using Nethermind.Consensus.Producers;
+using Nethermind.Consensus.Transactions;
 using Nethermind.Core;
 using Nethermind.Merge.Plugin.BlockProduction;
 using Nethermind.Merge.Plugin.Handlers;
@@ -33,7 +32,7 @@ namespace Nethermind.Merge.Plugin
             return _api.BlockProducerEnvFactory.Create();
         }
 
-        public virtual IBlockProducer InitBlockProducer(IBlockProducerFactory baseBlockProducerFactory, ITxSource? txSource)
+        public virtual async Task<IBlockProducer> InitBlockProducer(IConsensusPlugin consensusPlugin, ITxSource? txSource)
         {
             if (MergeEnabled)
             {
@@ -55,8 +54,10 @@ namespace Nethermind.Merge.Plugin
 
                 if (_logger.IsInfo) _logger.Info("Starting Merge block producer & sealer");
 
+                _blockProductionTrigger = new BuildBlocksWhenRequested();
+
                 IBlockProducer? blockProducer = _mergeBlockProductionPolicy.ShouldInitPreMergeBlockProduction()
-                    ? await consensusPlugin.InitBlockProducer()
+                    ? await consensusPlugin.InitBlockProducer(_blockProductionTrigger, txSource)
                     : null;
                 _manualTimestamper ??= new ManualTimestamper();
                 BlockProducerEnv blockProducerEnv = CreateBlockProducerEnv();

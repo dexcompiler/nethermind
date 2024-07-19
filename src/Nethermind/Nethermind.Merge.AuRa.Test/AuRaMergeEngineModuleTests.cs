@@ -3,14 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-<<<<<<< HEAD
-using System.Threading.Tasks;
-=======
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Nethermind.Blockchain.Blocks;
->>>>>>> 30f4f62fb4 (merge shutter into release branch)
 using Nethermind.Blockchain.Synchronization;
 using Nethermind.Config;
 using Nethermind.Consensus;
@@ -43,6 +38,7 @@ using Nethermind.Serialization.Json;
 using Nethermind.Specs;
 using Nethermind.Specs.ChainSpecStyle;
 using Nethermind.Specs.Forks;
+using Nethermind.State;
 using Nethermind.Synchronization.ParallelSync;
 using NSubstitute;
 using NUnit.Framework;
@@ -309,8 +305,9 @@ public class AuRaMergeEngineModuleTests : EngineModuleTests
                 LogManager);
 
 
-            BlockProducerEnv blockProducerEnv = blockProducerEnvFactory.Create(_useShutter ? new TestShutterTxSource() : null);
-            PostMergeBlockProducer postMergeBlockProducer = blockProducerFactory.Create(blockProducerEnv);
+            ITxSource? txSource = _useShutter ? new TestShutterTxSource() : null;
+            BlockProducerEnv blockProducerEnv = blockProducerEnvFactory.Create(txSource);
+            PostMergeBlockProducer postMergeBlockProducer = blockProducerFactory.Create(blockProducerEnv, BlockProductionTrigger, txSource);
             PostMergeBlockProducer = postMergeBlockProducer;
             PayloadPreparationService ??= new PayloadPreparationService(
                 postMergeBlockProducer,

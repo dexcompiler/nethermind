@@ -3,12 +3,13 @@
 
 using System.Threading.Tasks;
 using Nethermind.Consensus;
+using Nethermind.Consensus.Transactions;
 
 namespace Nethermind.Api.Extensions
 {
     public interface IConsensusWrapperPlugin : INethermindPlugin
     {
-        Task<IBlockProducer> InitBlockProducer(IConsensusPlugin consensusPlugin);
+        Task<IBlockProducer> InitBlockProducer(IConsensusPlugin consensusPlugin, ITxSource? txSource);
         bool Enabled { get; }
     }
 }
