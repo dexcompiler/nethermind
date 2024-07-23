@@ -49,8 +49,10 @@ jobs:
         uses: actions/create-github-app-token@v1
         id: auth
         with:
+          owner: ${{ github.repository_owner }}
           app-id: ${{ vars.ADMIN_APP_ID }}
           private-key: ${{ secrets.ADMIN_APP_PRIVATE_KEY }}
+          repositories: "nethermind"
 
       - name: Create a Runner
         id: run-linode-action
@@ -207,8 +209,10 @@ jobs:
         uses: actions/create-github-app-token@v1
         id: auth
         with:
+          owner: ${{ github.repository_owner }}
           app-id: ${{ vars.ADMIN_APP_ID }}
           private-key: ${{ secrets.ADMIN_APP_PRIVATE_KEY }}
+          repositories: "nethermind"
 
       - name: Destroy a Runner
         id: run-linode-action
