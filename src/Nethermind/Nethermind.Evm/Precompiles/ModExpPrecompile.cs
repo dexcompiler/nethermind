@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 using System;
+using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Nethermind.Core;
@@ -107,6 +108,14 @@ namespace Nethermind.Evm.Precompiles
             Metrics.ModExpPrecompile++;
 
             (int baseLength, int expLength, int modulusLength) = GetInputLengths(inputData);
+
+            StreamWriter writer = File.AppendText("C:/praca/modexp.txt");
+            writer.WriteLine(inputData.ToString());
+            writer.WriteLine(baseLength.ToString());
+            writer.WriteLine(expLength.ToString());
+            writer.WriteLine(modulusLength.ToString());
+            writer.WriteLine(DataGasCost(inputData, releaseSpec));
+            writer.Close();
 
             // if both are 0, than expLenght can be huge, which leads to potential buffer to big exception
             if (baseLength == 0 && modulusLength == 0)
