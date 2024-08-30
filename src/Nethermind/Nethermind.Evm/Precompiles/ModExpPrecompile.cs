@@ -109,14 +109,6 @@ namespace Nethermind.Evm.Precompiles
 
             (int baseLength, int expLength, int modulusLength) = GetInputLengths(inputData);
 
-            StreamWriter writer = File.AppendText("C:/praca/modexp.txt");
-            writer.WriteLine(inputData.ToString());
-            writer.WriteLine(baseLength.ToString());
-            writer.WriteLine(expLength.ToString());
-            writer.WriteLine(modulusLength.ToString());
-            writer.WriteLine(DataGasCost(inputData, releaseSpec));
-            writer.Close();
-
             // if both are 0, than expLenght can be huge, which leads to potential buffer to big exception
             if (baseLength == 0 && modulusLength == 0)
             {
@@ -147,6 +139,23 @@ namespace Nethermind.Evm.Precompiles
             gmp_lib.mpz_export(data, countp, 1, 1, 1, 0, powmResult);
             int count = (int)countp.Value;
 
+            try
+            {
+                StreamWriter writer = File.AppendText($"C:/praca/modexp/0modexp.txt");
+
+                byte[] input = inputData.Span.SliceWithZeroPaddingEmptyOnError(0, inputData.Length);
+
+                writer.WriteLine(input.ToHexString());
+                writer.WriteLine(baseInt.ToString());
+                writer.WriteLine(expInt.ToString());
+                writer.WriteLine(modulusInt.ToString());
+                writer.WriteLine(DataGasCost(inputData, releaseSpec));
+                writer.Close();
+            }
+            catch
+            {
+
+            }
 
             byte[] result = new byte[modulusLength];
             Marshal.Copy(data.ToIntPtr(), result, modulusLength - count, count);
