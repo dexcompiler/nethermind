@@ -345,7 +345,7 @@ public class JsonRpcProcessor : IJsonRpcProcessor
         {
             if (localErrorResponse?.Error?.SuppressWarning == false)
             {
-                if (_logger.IsWarn) _logger.Warn($"Error when handling {request} | {JsonSerializer.Serialize(localErrorResponse, EthereumJsonSerializer.JsonOptionsIndented)}");
+                if (_logger.IsTrace) _logger.Trace($"Error when handling {request} | {JsonSerializer.Serialize(localErrorResponse, EthereumJsonSerializer.JsonOptionsIndented)}");
             }
             Metrics.JsonRpcErrors++;
         }
