@@ -171,7 +171,6 @@ namespace Nethermind.Evm.TransactionProcessing
                     WorldState.Commit(spec);
                 }
             }
-            }
             else if (commit)
             {
                 WorldState.Commit(spec, tracer.IsTracingState ? tracer : NullStateTracer.Instance, commitRoots: !spec.IsEip658Enabled);
