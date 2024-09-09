@@ -138,7 +138,7 @@ public partial class BlockProcessor(
                 preBlockStateRoot = processedBlock.StateRoot;
                 // Make sure the prewarm task is finished before we reset the state
                 preWarmTask?.GetAwaiter().GetResult();
-                _stateProvider.Reset(resizeCollections: true);
+                _stateProvider.Reset();
             }
 
             if (options.ContainsFlag(ProcessingOptions.DoNotUpdateHead))
@@ -249,7 +249,7 @@ public partial class BlockProcessor(
 
         StoreBeaconRoot(block, spec);
         _blockhashStore.ApplyBlockhashStateChanges(block.Header);
-        _stateProvider.Commit(spec, commitStorageRoots: false);
+        _stateProvider.Commit(spec, commitRoots: false);
 
         TxReceipt[] receipts = _blockTransactionsExecutor.ProcessTransactions(block, options, ReceiptsTracer, spec);
 
@@ -263,7 +263,7 @@ public partial class BlockProcessor(
         _withdrawalProcessor.ProcessWithdrawals(block, spec);
         ReceiptsTracer.EndBlockTrace();
 
-        _stateProvider.Commit(spec, commitStorageRoots: true);
+        _stateProvider.Commit(spec, commitRoots: true);
 
         if (BlockchainProcessor.IsMainProcessingThread)
         {
