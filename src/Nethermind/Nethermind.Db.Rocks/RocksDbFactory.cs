@@ -16,6 +16,7 @@ public class RocksDbFactory : IDbFactory
     private readonly string _basePath;
 
     private readonly IntPtr _sharedCache;
+    private readonly IntPtr _env;
 
     public RocksDbFactory(IDbConfig dbConfig, ILogManager logManager, string basePath)
     {
@@ -31,13 +32,14 @@ public class RocksDbFactory : IDbFactory
         }
 
         _sharedCache = RocksDbSharp.Native.Instance.rocksdb_cache_create_lru(new UIntPtr(dbConfig.SharedBlockCacheSize));
+        _env = RocksDbSharp.Native.Instance.rocksdb_create_default_env();
     }
 
     public IDb CreateDb(DbSettings dbSettings) =>
-        new DbOnTheRocks(_basePath, dbSettings, _dbConfig, _logManager, sharedCache: _sharedCache);
+        new DbOnTheRocks(_basePath, dbSettings, _dbConfig, _logManager, sharedCache: _sharedCache, env: _env);
 
     public IColumnsDb<T> CreateColumnsDb<T>(DbSettings dbSettings) where T : struct, Enum =>
-        new ColumnsDb<T>(_basePath, dbSettings, _dbConfig, _logManager, Array.Empty<T>(), sharedCache: _sharedCache);
+        new ColumnsDb<T>(_basePath, dbSettings, _dbConfig, _logManager, Array.Empty<T>(), sharedCache: _sharedCache, env: _env);
 
     public string GetFullDbPath(DbSettings dbSettings) => DbOnTheRocks.GetFullDbPath(dbSettings.DbPath, _basePath);
 }

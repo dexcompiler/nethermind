@@ -91,7 +91,8 @@ public class DbOnTheRocks : IDb, ITunableDb
         IList<string>? columnFamilies = null,
         RocksDbSharp.Native? rocksDbNative = null,
         IFileSystem? fileSystem = null,
-        IntPtr? sharedCache = null)
+        IntPtr? sharedCache = null,
+        IntPtr? env = null)
     {
         _logger = logManager.GetClassLogger();
         _settings = dbSettings;
@@ -99,7 +100,7 @@ public class DbOnTheRocks : IDb, ITunableDb
         _fileSystem = fileSystem ?? new FileSystem();
         _rocksDbNative = rocksDbNative ?? RocksDbSharp.Native.Instance;
         _perTableDbConfig = new PerTableDbConfig(dbConfig, _settings);
-        _db = Init(basePath, dbSettings.DbPath, dbConfig, logManager, columnFamilies, dbSettings.DeleteOnStart, sharedCache);
+        _db = Init(basePath, dbSettings.DbPath, dbConfig, logManager, columnFamilies, dbSettings.DeleteOnStart, sharedCache, env);
         _iteratorManager = new IteratorManager(_db, null, _readAheadReadOptions);
     }
 
@@ -117,7 +118,7 @@ public class DbOnTheRocks : IDb, ITunableDb
     }
 
     private RocksDb Init(string basePath, string dbPath, IDbConfig dbConfig, ILogManager? logManager,
-        IList<string>? columnNames = null, bool deleteOnStart = false, IntPtr? sharedCache = null)
+        IList<string>? columnNames = null, bool deleteOnStart = false, IntPtr? sharedCache = null, IntPtr? env = null)
     {
         _fullPath = GetFullDbPath(dbPath, basePath);
         _logger = logManager?.GetClassLogger() ?? default;
@@ -135,7 +136,7 @@ public class DbOnTheRocks : IDb, ITunableDb
             // ReSharper disable once VirtualMemberCallInConstructor
             if (_logger.IsDebug) _logger.Debug($"Building options for {Name} DB");
             DbOptions = new DbOptions();
-            BuildOptions(_perTableDbConfig, DbOptions, sharedCache);
+            BuildOptions(_perTableDbConfig, DbOptions, sharedCache, env);
 
             ColumnFamilies? columnFamilies = null;
             if (columnNames is not null)
@@ -150,7 +151,7 @@ public class DbOnTheRocks : IDb, ITunableDb
 
                     ColumnFamilyOptions options = new();
                     IntPtr? cacheForColumn = _cache ?? sharedCache;
-                    BuildOptions(new PerTableDbConfig(dbConfig, _settings, columnFamily), options, cacheForColumn);
+                    BuildOptions(new PerTableDbConfig(dbConfig, _settings, columnFamily), options, cacheForColumn, env);
                     columnFamilies.Add(columnFamily, options);
                 }
             }
@@ -404,7 +405,7 @@ public class DbOnTheRocks : IDb, ITunableDb
         return 0;
     }
 
-    protected virtual void BuildOptions<T>(PerTableDbConfig dbConfig, Options<T> options, IntPtr? sharedCache) where T : Options<T>
+    protected virtual void BuildOptions<T>(PerTableDbConfig dbConfig, Options<T> options, IntPtr? sharedCache, IntPtr? env) where T : Options<T>
     {
         // This section is about the table factory.. and block cache apparently.
         // This effect the format of the SST files and usually require resync to take effect.
@@ -490,6 +491,11 @@ public class DbOnTheRocks : IDb, ITunableDb
         {
             _rocksDbNative.rocksdb_block_based_options_set_data_block_index_type(tableOptions.Handle, 1);
             _rocksDbNative.rocksdb_block_based_options_set_data_block_hash_ratio(tableOptions.Handle, dataBlockIndexUtilRatio.Value);
+        }
+
+        if (env is not null)
+        {
+            options.SetEnv(env.Value);
         }
 
         ulong blockCacheSize = dbConfig.BlockCacheSize;
