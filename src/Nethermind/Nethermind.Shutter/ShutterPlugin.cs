@@ -96,6 +96,11 @@ public class ShutterPlugin : IConsensusWrapperPlugin, IInitializationPlugin
                 }
             }
 
+            foreach (var v in validatorsInfo)
+            {
+                if (_logger.Info) _logger.Info($"Shutter validator info {v.Key}: {v.Value}")
+            }
+
             _shutterApi = new ShutterApi(
                 _api.AbiEncoder,
                 _api.BlockTree,

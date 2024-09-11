@@ -159,6 +159,7 @@ public class ShutterBlockHandler : IShutterBlockHandler
     {
         if (validatorsInfo.Count == 0)
         {
+            if (_logger.IsInfo) _logger.Info($"No Shutter validators in info file.");
             return;
         }
 
