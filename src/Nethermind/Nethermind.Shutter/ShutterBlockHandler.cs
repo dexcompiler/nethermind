@@ -87,6 +87,7 @@ public class ShutterBlockHandler : IShutterBlockHandler
 
             if (!_haveCheckedRegistered)
             {
+                if (_logger.IsInfo) _logger.Info($"Checking Shutter validator keys are registered...");
                 CheckAllValidatorsRegistered(head.Header, _validatorsInfo);
                 _haveCheckedRegistered = true;
             }

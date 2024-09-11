@@ -42,6 +42,7 @@ public class ValidatorRegistryContract(
         }
 
         uint updates = (uint)GetNumUpdates(header);
+        if (_logger.IsInfo) _logger.Info($"Shutter validator has {updates} updates");
         for (uint i = 0; i < updates; i++)
         {
             Update update = GetUpdate(header, updates - i - 1);
@@ -55,31 +56,31 @@ public class ValidatorRegistryContract(
 
             if (msg.Version != messageVersion)
             {
-                if (_logger.IsInfo) _logger.Info($"Registration message has wrong version ({msg.Version}) should be {messageVersion}");
+                if (_logger.IsInfo) _logger.Info($"Shutter Registration message has wrong version ({msg.Version}) should be {messageVersion}");
                 continue;
             }
 
             if (msg.ChainId != chainId)
             {
-                if (_logger.IsInfo) _logger.Info($"Registration message has incorrect chain ID ({msg.ChainId}) should be {chainId}");
+                if (_logger.IsInfo) _logger.Info($"Shutter Registration message has incorrect chain ID ({msg.ChainId}) should be {chainId}");
                 continue;
             }
 
             if (!msg.ContractAddress.SequenceEqual(ContractAddress!.Bytes))
             {
-                if (_logger.IsInfo) _logger.Info($"Registration message contains an invalid contract address ({msg.ContractAddress.ToHexString()}) should be {ContractAddress}");
+                if (_logger.IsInfo) _logger.Info($"Shutter Registration message contains an invalid contract address ({msg.ContractAddress.ToHexString()}) should be {ContractAddress}");
                 continue;
             }
 
             if (nonces[msg.ValidatorIndex].HasValue && msg.Nonce <= nonces[msg.ValidatorIndex])
             {
-                if (_logger.IsInfo) _logger.Info($"Registration message has incorrect nonce ({msg.Nonce}) should be {nonces[msg.ValidatorIndex]}");
+                if (_logger.IsInfo) _logger.Info($"Shutter Registration message has incorrect nonce ({msg.Nonce}) should be {nonces[msg.ValidatorIndex]}");
                 continue;
             }
 
             if (!ShutterCrypto.CheckValidatorRegistrySignature(validatorsInfo[msg.ValidatorIndex], update.Signature, update.Message))
             {
-                if (_logger.IsInfo) _logger.Info("Registration message has invalid signature.");
+                if (_logger.IsInfo) _logger.Info("Shutter Registration message has invalid signature.");
                 continue;
             }
 
@@ -88,14 +89,17 @@ public class ValidatorRegistryContract(
 
             if (msg.IsRegistration)
             {
+                if (_logger.IsInfo) _logger.Info($"Shutter validator remove #{msg.ValidatorIndex}");
                 unregistered.Remove(msg.ValidatorIndex);
             }
             else
             {
+                if (_logger.IsInfo) _logger.Info($"Shutter validator add #{msg.ValidatorIndex}");
                 unregistered.Add(msg.ValidatorIndex);
             }
         }
 
+        if (_logger.IsInfo) _logger.Info($"Shutter validator #unregistered={unregistered.Count}");
         return unregistered.Count == 0;
     }
 
@@ -112,7 +116,7 @@ public class ValidatorRegistryContract(
         {
             if (encodedMessage.Length != 46)
             {
-                throw new ArgumentException("Validator registry contract message was wrong length.");
+                throw new ArgumentException("Shutter Validator registry contract message was wrong length.");
             }
 
             Version = encodedMessage[0];
